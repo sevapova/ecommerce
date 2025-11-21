@@ -78,10 +78,31 @@ class OrderListView(View):
 class OrderDetailView(View):
 
     def get(self, request: HttpRequest, pk: int) -> JsonResponse:
-        pass
+        order = get_object_or_404(Order, pk=pk)
+        return JsonResponse(order.to_dict())
+        
 
     def put(self, request: HttpRequest, pk: int) -> JsonResponse:
-        pass
+        data = json.loads(request.body) if request.body else {}
+        order = get_object_or_404(Order, pk=pk)
+
+        shipping_address = data.get('shipping_address')
+        if shipping_address:
+            order.address = shipping_address
+        
+        
+        status = data.get('status')
+        if status:
+            order.status = status
+    
+        payment_status = data.get('payment_status')
+        if payment_status:
+            order.payment_status = payment_status
+
+        order.save()
+        return JsonResponse(order.to_dict())
     
     def delete(self, request: HttpRequest, pk:int) -> JsonResponse:
-        pass
+        order = get_object_or_404(Order, pk=pk)
+        order.delete()
+        return JsonResponse({'status':'deleted'}, status=204)
